@@ -6,7 +6,7 @@ import cors from 'cors';
 import { db } from './models/index';
 import { ConnectOptions } from 'mongoose';
 import formatResponse from './utils/formatter';
-import logRequest from './middleware/logging';
+import logRequest from './middleware/common';
 import todoRouter from './routes/todo.routes';
 
 //const variable
