@@ -13,8 +13,12 @@ const get = async (req: express.Request, res: express.Response) => {
 	//search condition
 	let condition = userId ? { userId: userId } : {};
 
+	//sorting
+	let isAscending = req.query.isAscending ? (req.query.isAscending === 'false' ? false : true) : true;
+
 	//get all todos
 	await Todo.find(condition)
+		.sort(isAscending ? 'deadline' : '-deadline')
 		.then((todos) => {
 			//case Todo empty
 			if (todos.length === 0) {
