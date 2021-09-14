@@ -1,108 +1,162 @@
-import express from 'express';
-import { db } from '../models/index';
-import formatResponse from '../utils/formatter';
-
-//get todo db
-const Todo = db.todo;
+import http from 'http';
+import response from '../utils/formatter';
+import Todos from '../models/todo.models';
+import { ITodo, ITodoDb, ITodoUpdate } from '../interfaces/Todo';
 
 //get all todo
-const get = async (req: express.Request, res: express.Response) => {
-	//get query if available
-	const userId = req.query.userId;
-
-	//search condition
-	let condition = userId ? { userId: userId } : {};
-
-	//get all todos
-	await Todo.find(condition)
-		.then((todos) => {
-			//case Todo empty
-			if (todos.length === 0) {
-				return res.send(formatResponse('There is no todos'));
-			} else {
-				return res.send(
-					formatResponse(userId ? 'Successfully retrieve todos from user' : 'Successfully retrieve todos', {
-						todos: todos,
-					})
-				);
-			}
-		})
-		.catch((err) => {
-			res.status(500).send(formatResponse(err.message ?? 'Unknown error happen', undefined, false, 500));
-		});
+const get = async (req: http.IncomingMessage, res: http.ServerResponse, sortAscending: string = 'true') => {
+	try {
+		const todos = (await Todos.find()) as ITodoDb[];
+		if (todos) {
+			//case todos exist
+			response(
+				res,
+				'Successfully retrieve todos',
+				{
+					todos:
+						sortAscending === 'true'
+							? todos.sort((a, b) => {
+									return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+							  })
+							: todos.sort((a, b) => {
+									return new Date(b.deadline).getTime() - new Date(a.deadline).getTime();
+							  }),
+				},
+				true,
+				200
+			);
+		} else {
+			//case todo empty
+			response(res, 'There are no todos', undefined, true, 200);
+		}
+	} catch (error: unknown) {
+		response(res, String(error) ?? 'Unknown error happen', undefined, false, 500);
+	}
 };
 
 //get a todo by id
-const getById = async (req: express.Request, res: express.Response) => {
-	//get todo id
-	const id = req.params.id;
-
-	//get a todo by id
-	await Todo.findOne({ _id: id })
-		.then((todo) => {
-			//case not found
-			if (todo) {
-				res.send(formatResponse(`Successfully retrieve todo`, { todo: todo }));
-			} else {
-				res.status(404).send(formatResponse(`Can not find todo with id=${id}`, undefined, false, 404));
-			}
-		})
-		.catch((err) => {
-			res.status(500).send(formatResponse(err.message ?? 'Unknown error happen', undefined, false, 500));
-		});
+const getById = async (req: http.IncomingMessage, res: http.ServerResponse, id: string) => {
+	try {
+		const todo = await Todos.findById(id);
+		if (todo) {
+			//case todo exist
+			response(res, 'Successfully retrieve todo', { todo: todo }, true, 200);
+		} else {
+			//case todo empty
+			response(res, `Cannot find todo with id=${id}`, undefined, true, 200);
+		}
+	} catch (error) {
+		response(res, String(error) ?? 'Unknown error happen', undefined, false, 500);
+	}
 };
 
 //create new todo
-const create = async (req: express.Request, res: express.Response) => {
-	//get all inputted data
-	const newTodo = new Todo({
-		desc: req.body.desc,
-		deadline: req.body.deadline,
-	});
-
-	//save new todo
-	await newTodo
-		.save()
-		.then((todo) => {
-			res.send(formatResponse(`Successfully create a new todo`, { todo: todo }));
-		})
-		.catch((err) => {
-			res.status(500).send(formatResponse(err.message ?? 'Unknown error happen', undefined, false, 500));
-		});
+const create = async (req: http.IncomingMessage, res: http.ServerResponse, body: Object) => {
+	try {
+		const reqBody: ITodo = body as ITodo;
+		const deadline = new Date(reqBody.deadline);
+		//check if valid date
+		if (deadline instanceof Date && !isNaN(deadline.getTime())) {
+			//check if date already expired
+			if (deadline > new Date()) {
+				if (typeof reqBody.desc === 'string') {
+					//create new todo
+					const newTodo = await Todos.create(reqBody);
+					response(res, 'Successfully create a new todo', { todo: newTodo }, true, 201);
+				} else {
+					response(res, 'Description is not a string', undefined, false, 400);
+				}
+			} else {
+				response(res, 'Deadline already expired', undefined, false, 400);
+			}
+		} else {
+			response(res, 'Date is not a valid date', undefined, false, 400);
+		}
+	} catch (error) {
+		response(res, String(error) ?? 'Unknown error happen', undefined, false, 500);
+	}
 };
 
 //update a todo by id
-const update = async (req: express.Request, res: express.Response) => {
-	//get todo id
-	const id = req.params.id;
+const update = async (req: http.IncomingMessage, res: http.ServerResponse, id: string, body: Object) => {
+	try {
+		const reqBody: ITodoUpdate = body as ITodoUpdate;
+		const deadline = reqBody.deadline ? new Date(reqBody.deadline) : null;
+		let validDate = false;
+		let validBoolean = false;
+		let validString = false;
 
-	Todo.findByIdAndUpdate(id, req.body, {
-		new: true,
-	})
-		.then((todo) => {
-			res.send(formatResponse(`Successfully update todo with id=${id}`, { todo: todo }));
-		})
-		.catch((err) => {
-			res.status(500).send(formatResponse(err.message ?? 'Unknown error happen', undefined, false, 500));
-		});
+		//check valid deadline first
+		if (deadline && deadline instanceof Date && !isNaN(deadline.getTime())) {
+			if (deadline > new Date()) {
+				validDate = true;
+			} else {
+				response(res, 'Deadline already expired', undefined, false, 400);
+			}
+		} else if (!deadline) {
+			validDate = true;
+		} else {
+			response(res, 'Date is not a valid date', undefined, false, 400);
+		}
+
+		//check valid boolean
+		if (typeof reqBody.done === 'boolean') {
+			validBoolean = true;
+		} else if (!reqBody.done) {
+			validBoolean = true;
+		} else {
+			response(res, 'Done is not a valid boolean', undefined, false, 400);
+		}
+
+		//check valid boolean
+		if (typeof reqBody.desc === 'string') {
+			validString = true;
+		} else if (!reqBody.desc) {
+			validString = true;
+		} else {
+			response(res, 'Description is not a valid string', undefined, false, 400);
+		}
+
+		//continue update data
+		if (validDate && validBoolean && validString) {
+			//update a todo
+			const todo = (await Todos.findById(id)) as ITodoDb;
+			if (todo) {
+				//case todo exist
+				const updatedTodo: ITodoDb = {
+					...todo,
+					desc: reqBody.desc ?? todo.desc,
+					deadline: reqBody.deadline ?? todo.deadline,
+					done: reqBody.done ?? todo.done,
+					updatedAt: new Date().toISOString(),
+				};
+				const result = await Todos.update(id, updatedTodo);
+				response(res, `Successfully update todo with id=${id}`, { todo: result }, true, 200);
+			} else {
+				//case todo empty
+				response(res, `Cannot find todo with id=${id}`, undefined, true, 200);
+			}
+		}
+	} catch (error) {
+		response(res, String(error) ?? 'Unknown error happen', undefined, false, 500);
+	}
 };
 
 //delete a todo by id
-const deleteById = async (req: express.Request, res: express.Response) => {
-	//get todo id
-	const id = req.params.id;
-
-	Todo.findByIdAndRemove(id)
-		.then((result) => {
-			if (result) {
-				res.send(formatResponse(`Successfully delete todo with id=${id}`, undefined));
-			} else {
-				res.status(404).send(formatResponse(`Can not find todo with id=${id}`, undefined, false, 404));
-			}
-		})
-		.catch((err) => {
-			res.status(500).send(formatResponse(err.message ?? 'Unknown error happen', undefined, false, 500));
-		});
+const deleteById = async (req: http.IncomingMessage, res: http.ServerResponse, id: string) => {
+	try {
+		const todo = await Todos.findById(id);
+		if (todo) {
+			//case todo exist
+			await Todos.removeById(id);
+			response(res, `Successfully delete todo with id=${id}`, undefined, true, 200);
+		} else {
+			//case todo empty
+			response(res, `Cannot find todo with id=${id}`, undefined, true, 200);
+		}
+	} catch (error) {
+		response(res, String(error) ?? 'Unknown error happen', undefined, false, 500);
+	}
 };
 
 // TODO: delete todos by user id
