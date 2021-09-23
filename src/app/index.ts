@@ -6,8 +6,9 @@ import cors from 'cors';
 import { db } from './models/index';
 import { ConnectOptions } from 'mongoose';
 import formatResponse from './utils/formatter';
-import logRequest from './middleware/common';
-import todoRouter from './routes/todo.routes';
+import routesV1 from './routes/v1/index';
+import logger from './configs/logger';
+import { errorConverter, errorHandler } from './middlewares/error';
 
 //const variable
 const app = express();
@@ -34,17 +35,21 @@ db.mongoose
 		// useFindAndModify: false,
 	} as ConnectOptions)
 	.then(() => {
-		console.log(`Connected to the ${dbUrl}!`);
+		logger.info(`Connected to the ${dbUrl}!`);
 	})
 	.catch((err) => {
-		console.log('Cannot connect to the database! \n', err);
+		logger.error('Cannot connect to the database! \n', err);
 		process.exit();
 	});
 
-app.use(logRequest);
-
 //include all routes
-todoRouter(app);
+app.use('/api/v1', routesV1);
+
+// convert error to ApiError, if needed
+app.use(errorConverter);
+
+// handle error
+app.use(errorHandler);
 
 app.use(function (req, res) {
 	res.status(404).send(formatResponse('Path not found', undefined, false, 404));
