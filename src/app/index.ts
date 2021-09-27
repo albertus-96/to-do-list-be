@@ -1,12 +1,14 @@
 //require/import section
 require('dotenv').config('.env');
-// require("./src/app/config/auth.config");
+import './configs/auth.config';
 import express from 'express';
 import cors from 'cors';
+import passport from 'passport';
 import { db } from './models/index';
 import { ConnectOptions } from 'mongoose';
 import formatResponse from './utils/formatter';
 import routesV1 from './routes/v1/index';
+import routesV2 from './routes/v2/index';
 import logger from './configs/logger';
 import { errorConverter, errorHandler } from './middlewares/error';
 
@@ -26,6 +28,9 @@ app.use(cors(corsOptions));
 // Parse requests of content-type - application/json
 app.use(express.json());
 
+// jwt authentication
+app.use(passport.initialize());
+
 // Connect to mongo DB
 db.mongoose
 	.connect(dbUrl, {
@@ -44,6 +49,7 @@ db.mongoose
 
 //include all routes
 app.use('/api/v1', routesV1);
+app.use('/api/v2', routesV2);
 
 // convert error to ApiError, if needed
 app.use(errorConverter);
