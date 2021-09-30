@@ -10,14 +10,15 @@ const Token = db.token;
 const authMiddleware = () => {
 	return function (req: express.Request, res: express.Response, next: express.NextFunction) {
 		const token = req.headers.authorization?.replace('Bearer ', '');
-		Token.findOne({ token: token }).then((res: any) => {
-			if (res) {
+		Token.findOne({ token: token }).then((result: any) => {
+			if (result) {
 				return next(new ApiError(httpStatus.FORBIDDEN, 'Invalid token, token already expired.'));
 			} else {
 				passport.authenticate('jwt', function (err: Error, user: any, info: any) {
 					if (!user || err || info) {
 						return next(new ApiError(httpStatus.BAD_REQUEST, String(err || info)));
 					} else {
+						res.locals.userId = user.id;
 						next();
 					}
 				})(req, res, next);

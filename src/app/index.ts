@@ -4,6 +4,7 @@ import './configs/auth.config';
 import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
+import fileUpload from 'express-fileupload';
 import { db } from './models/index';
 import { ConnectOptions } from 'mongoose';
 import formatResponse from './utils/formatter';
@@ -11,6 +12,7 @@ import routesV1 from './routes/v1/index';
 import routesV2 from './routes/v2/index';
 import logger from './configs/logger';
 import { errorConverter, errorHandler } from './middlewares/error';
+import { checkUploadDir } from './services/files.services';
 
 //const variable
 const app = express();
@@ -25,8 +27,15 @@ let corsOptions = {
 // Cors setup for app
 app.use(cors(corsOptions));
 
+//for serving image
+app.use(express.static('public'));
+
 // Parse requests of content-type - application/json
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+//for uploading image
+app.use(fileUpload({ createParentPath: false, limits: { fileSize: 2 * 1024 * 1024 }, abortOnLimit: true }));
 
 // jwt authentication
 app.use(passport.initialize());
@@ -60,5 +69,7 @@ app.use(errorHandler);
 app.use(function (req, res) {
 	res.status(404).send(formatResponse('Path not found', undefined, false, 404));
 });
+
+checkUploadDir();
 
 export default app;

@@ -24,6 +24,10 @@ export default (mongoose: Mongoose) => {
 					required: false,
 					default: false,
 				},
+				screenshot: {
+					type: { name: String, url: String },
+					required: false,
+				},
 			},
 			{ timestamps: true }
 		)

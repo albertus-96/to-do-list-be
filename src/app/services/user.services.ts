@@ -10,7 +10,7 @@ const createUser = async (newUser: any) => {
 
 //get a user by email
 const getUserByEmail = async (email: string) => {
-	return User.findOne({ email });
+	return await User.findOne({ email });
 };
 
 export { createUser, getUserByEmail };

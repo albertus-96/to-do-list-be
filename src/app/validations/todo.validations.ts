@@ -3,8 +3,9 @@ import { objectId, todoDeadline } from './custom.validations';
 
 const createTodo = {
 	body: Joi.object().keys({
-		description: Joi.string().required(),
+		desc: Joi.string().required(),
 		deadline: Joi.date().required().custom(todoDeadline),
+		screenshot: Joi.any(),
 	}),
 };
 
@@ -26,9 +27,10 @@ const updateTodo = {
 	}),
 	body: Joi.object()
 		.keys({
-			description: Joi.string(),
+			desc: Joi.string(),
 			deadline: Joi.date().custom(todoDeadline),
 			done: Joi.boolean(),
+			screenShot: Joi.any(),
 		})
 		.min(1),
 };

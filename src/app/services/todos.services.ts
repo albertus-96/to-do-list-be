@@ -1,3 +1,4 @@
+import { ITodo } from '../interfaces/Todo';
 import { db } from '../models/index';
 
 //get todo db
@@ -15,7 +16,7 @@ const getTodoById = async (id: string) => {
 };
 
 //create a new todo
-const createTodo = async (newTodo: { desc: string; deadline: Date }) => {
+const createTodo = async (newTodo: ITodo) => {
 	return await Todo.create(newTodo);
 };
 
