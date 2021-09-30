@@ -11,6 +11,7 @@ const jwtOptions = {
 	jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 };
 
+//jwt verify method and step
 const jwtVerify = async (token: any, done: any) => {
 	User.findOne({ emailAddress: token.user.emailAddress })
 		.then(async (user) => {

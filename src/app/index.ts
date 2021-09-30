@@ -13,15 +13,16 @@ import routesV2 from './routes/v2/index';
 import logger from './configs/logger';
 import { errorConverter, errorHandler } from './middlewares/error';
 import { checkUploadDir } from './services/files.services';
+import config from './configs/config';
 
 //const variable
 const app = express();
 // const { formatResponse } = require("./src/app/utils/formatter");
-const dbUrl = process.env.DATABASE_URL || 'no db';
+const dbUrl = config.dbUrl || 'no db';
 
 //port for handling cors
 let corsOptions = {
-	origin: process.env.CORS,
+	origin: config.cors,
 };
 
 // Cors setup for app
