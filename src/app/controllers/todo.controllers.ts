@@ -128,7 +128,7 @@ const deleteById = asyncWrapper(async (req: express.Request, res: express.Respon
 		if (result) {
 			res.send(formatResponse(`Successfully delete todo with id=${id}`, undefined));
 		} else {
-			throw new ApiError(httpStatus.BAD_REQUEST, 'Can not found todo with id=${id}');
+			throw new ApiError(httpStatus.BAD_REQUEST, `Can not found todo with id=${id}`);
 		}
 	});
 });

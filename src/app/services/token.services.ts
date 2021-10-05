@@ -6,7 +6,7 @@ import { db } from '../models/index';
 const Token = db.token;
 
 //generate new token
-const generateToken = async (user: any, secret: string = config.signKey!!) => {
+const generateToken = async (user: any, secret: string = config.signKey) => {
 	const payload = {
 		user: user,
 	};

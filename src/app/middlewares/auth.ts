@@ -16,7 +16,7 @@ const authMiddleware = () => {
 			} else {
 				passport.authenticate('jwt', function (err: Error, user: any, info: any) {
 					if (!user || err || info) {
-						return next(new ApiError(httpStatus.BAD_REQUEST, String(err || info)));
+						return next(new ApiError(httpStatus.UNAUTHORIZED, String(err || info)));
 					} else {
 						res.locals.userId = user.id;
 						next();

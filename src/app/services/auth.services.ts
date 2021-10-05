@@ -2,7 +2,6 @@ import httpStatus from 'http-status';
 import { ApiError } from '../interfaces/Error';
 import * as userServices from './user.services';
 import * as tokenServices from './token.services';
-import { string } from 'joi';
 
 const loginUserWithEmail = async (email: string, password: string) => {
 	const user: any = await userServices.getUserByEmail(email);

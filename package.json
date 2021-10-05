@@ -4,7 +4,7 @@
 	"description": "This is a repository for BE side of React-To-Do-List App",
 	"main": "server.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "jest --watchAll --coverage --verbose  --runInBand --env node",
 		"server": "nodemon server.ts"
 	},
 	"repository": {
@@ -22,6 +22,13 @@
 			"<rootDir>/src"
 		],
 		"testEnvironment": "node",
+		"preset": "ts-jest",
+		"transform": {
+			"node_modules/variables/.+\\.(j|t)sx?$": "ts-jest"
+		},
+		"transformIgnorePatterns": [
+			"node_modules/(?!variables/.*)"
+		],
 		"coveragePathIgnorePatterns": [
 			"/node_modules/"
 		],
@@ -35,19 +42,17 @@
 		"verbose": true,
 		"collectCoverage": true,
 		"collectCoverageFrom": [
-			"<rootDir>/src/app/**/*.js"
+			"<rootDir>/src/app/**/*.ts"
 		]
 	},
 	"dependencies": {
 		"@types/express-fileupload": "^1.1.7",
-		"@types/multer": "^1.4.7",
 		"bcrypt": "^5.0.1",
 		"cors": "^2.8.5",
 		"dotenv": "^10.0.0",
 		"express": "^4.17.1",
 		"express-fileupload": "^1.2.1",
 		"http-status": "^1.5.0",
-		"jest": "^27.1.0",
 		"joi": "^17.4.2",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^6.0.4",
@@ -61,7 +66,13 @@
 		"@types/bcrypt": "^5.0.0",
 		"@types/cors": "^2.8.12",
 		"@types/express": "^4.17.13",
+		"@types/jest": "^27.0.2",
 		"@types/passport-jwt": "^3.0.6",
+		"@types/supertest": "^2.0.11",
+		"jest": "^27.2.4",
+		"mongodb-memory-server": "^7.4.2",
+		"supertest": "^6.1.6",
+		"ts-jest": "^27.0.5",
 		"typescript": "^4.4.2"
 	}
 }

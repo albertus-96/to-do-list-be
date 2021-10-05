@@ -9,7 +9,9 @@ import formatResponse from '../utils/formatter';
 const register = asyncWrapper(async (req: express.Request, res: express.Response) => {
 	await userServices.createUser(req.body).then(async (user) => {
 		const token = await tokenServices.generateToken({ name: user.name, email: user.email, id: user._id }, undefined);
-		res.status(httpStatus.CREATED).send(formatResponse('Successfully register the user', { token: token }));
+		res
+			.status(httpStatus.CREATED)
+			.send(formatResponse('Successfully register the user', { token: token, userId: user._id }));
 	});
 });
 
