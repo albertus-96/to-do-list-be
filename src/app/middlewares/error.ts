@@ -21,10 +21,10 @@ const errorConverter = (err: any, req: express.Request, res: express.Response, n
 //handle every error on API
 const errorHandler = (err: ApiError, req: express.Request, res: express.Response, next: express.NextFunction) => {
 	let { statusCode, message } = err;
-	if (config.env === 'production' && !err.isOperational) {
-		statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-		message = String(httpStatus[httpStatus.INTERNAL_SERVER_ERROR]);
-	}
+	// if (config.env === 'production' && !err.isOperational) {
+	// 	statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+	// 	message = String(httpStatus[httpStatus.INTERNAL_SERVER_ERROR]);
+	// }
 
 	res.locals.errorMessage = err.message;
 
