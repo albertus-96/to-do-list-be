@@ -48,6 +48,13 @@ describe('Auth Routes V2', () => {
 			expect(response.body.data.token).toBeTruthy();
 			token = response.body.data.token;
 		});
+
+		//negative test case
+		it('should return error because user does not exist', async () => {
+			const response = await agent.post('/api/v2/auth/login').send({ email: 'mail@mail.com', password: 'baba123' });
+			expect(response.statusCode).toBe(400);
+			expect(response.body.message).toBe('Incorrect email or password');
+		});
 	});
 
 	describe('#POST api/v2/auth/logout', () => {
