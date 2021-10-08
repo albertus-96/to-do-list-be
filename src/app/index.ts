@@ -58,8 +58,8 @@ db.mongoose
 	});
 
 //include all routes
-app.use('/api/v1', routesV1);
-app.use('/api/v2', routesV2);
+app.use('/v1/api', routesV1);
+app.use('/v2/api', routesV2);
 
 // convert error to ApiError, if needed
 app.use(errorConverter);
